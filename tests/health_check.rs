@@ -6,9 +6,19 @@ use zero2prod::configuration::{self, DatabaseSettings};
 use zero2prod::startup::run;
 use zero2prod::telemetry;
 
+// This value is initialized only in the first access
 static TRACING: Lazy<()> = Lazy::new(|| {
-    let subscriber = telemetry::get_subscriber(String::from("test"), String::from("debug"));
-    telemetry::init_subscriber(subscriber);
+    let subsciber_name = String::from("test");
+    let default_filter_level = String::from("info");
+    if std::env::var("TEST_LOG").is_ok() {
+        let subscriber =
+            telemetry::get_subscriber(subsciber_name, default_filter_level, std::io::stdout);
+        telemetry::init_subscriber(subscriber);
+    } else {
+        let subscriber =
+            telemetry::get_subscriber(subsciber_name, default_filter_level, std::io::sink);
+        telemetry::init_subscriber(subscriber);
+    }
 });
 
 pub struct TestApp {
