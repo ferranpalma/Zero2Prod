@@ -14,10 +14,9 @@ async fn main() -> Result<(), std::io::Error> {
     );
     telemetry::init_subscriber(subscriber);
 
+    // Expected to return a Settings instance that contains ApplicationSettings and DatabaseSettings
     let configuration = configuration::get_configuration().expect("Failed to read configuration.");
-    let connection_pool =
-        PgPool::connect_lazy(configuration.database.connection_string().expose_secret())
-            .expect("Failed to connect to Postgres.");
+    let connection_pool = PgPool::connect_lazy_with(configuration.database.connect_with_db());
     let address = format!(
         "{}:{}",
         configuration.application.host, configuration.application.port,
