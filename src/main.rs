@@ -1,5 +1,5 @@
 use zero2prod::configuration;
-use zero2prod::startup;
+use zero2prod::startup::Application;
 use zero2prod::telemetry;
 
 #[tokio::main]
@@ -13,7 +13,6 @@ async fn main() -> Result<(), std::io::Error> {
 
     // Expected to return a Settings instance that contains ApplicationSettings and DatabaseSettings
     let configuration = configuration::get_configuration().expect("Failed to read configuration.");
-    let server = startup::build(configuration).await?;
-    server.await?;
+    let application = Application::build(configuration).await?;
     Ok(())
 }
