@@ -2,6 +2,8 @@ use secrecy::{ExposeSecret, Secret};
 use serde_aux::field_attributes::deserialize_number_from_string;
 use sqlx::postgres::{PgConnectOptions, PgSslMode};
 
+use crate::domain::SubscriberEmail;
+
 pub enum Environment {
     Local,
     Production,
@@ -35,6 +37,25 @@ impl TryFrom<String> for Environment {
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
+    pub email_client: EmailCLientSettings,
+}
+
+#[derive(serde::Deserialize)]
+pub struct EmailCLientSettings {
+    pub base_url: String,
+    pub sender_email: String,
+    pub authorization_token: Secret<String>,
+    pub timeout_miliseconds: u64,
+}
+
+impl EmailCLientSettings {
+    pub fn sender(&self) -> Result<SubscriberEmail, String> {
+        SubscriberEmail::parse(self.sender_email.clone())
+    }
+
+    pub fn timeout(&self) -> std::time::Duration {
+        std::time::Duration::from_millis(self.timeout_miliseconds)
+    }
 }
 
 #[derive(serde::Deserialize)]
