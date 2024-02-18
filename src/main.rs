@@ -13,6 +13,6 @@ async fn main() -> Result<(), std::io::Error> {
 
     // Expected to return a Settings instance that contains ApplicationSettings and DatabaseSettings
     let configuration = configuration::get_configuration().expect("Failed to read configuration.");
-    let application = Application::build(configuration).await?;
+    let _application = Application::build(configuration).await?;
     Ok(())
 }
