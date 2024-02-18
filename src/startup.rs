@@ -1,3 +1,4 @@
+use crate::configuration::Settings;
 use crate::email_client::EmailClient;
 use crate::routes::{health_check::health_check, subscriptions::subscribe};
 use actix_web::dev::Server;
@@ -6,6 +7,31 @@ use actix_web::{web, App, HttpServer};
 use sqlx::PgPool;
 use std::net::TcpListener;
 use tracing_actix_web::TracingLogger;
+
+pub async fn build(configuration: Settings) -> Result<Server, std::io::Error> {
+    let connection_pool = PgPool::connect_lazy_with(configuration.database.connect_with_db());
+
+    let sender_email = configuration
+        .email_client
+        .sender()
+        .expect("Invalid sender email address.");
+    let base_url = reqwest::Url::parse(&configuration.email_client.base_url)
+        .unwrap_or_else(|_| panic!("Can't parse {} as url", configuration.email_client.base_url));
+    let timeout = configuration.email_client.timeout();
+    let email_client = EmailClient::new(
+        base_url,
+        sender_email,
+        configuration.email_client.authorization_token,
+        timeout,
+    );
+
+    let address = format!(
+        "{}:{}",
+        configuration.application.host, configuration.application.port,
+    );
+    let listener = TcpListener::bind(address)?;
+    run(listener, connection_pool, email_client)
+}
 
 pub fn run(
     listener: TcpListener,

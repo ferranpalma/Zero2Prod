@@ -7,6 +7,11 @@ use zero2prod::email_client::EmailClient;
 use zero2prod::startup::run;
 use zero2prod::telemetry;
 
+pub struct TestApp {
+    pub address: String,
+    pub db_pool: PgPool,
+}
+
 // This value is initialized only in the first access
 static TRACING: Lazy<()> = Lazy::new(|| {
     let subsciber_name = String::from("test");
@@ -21,11 +26,6 @@ static TRACING: Lazy<()> = Lazy::new(|| {
         telemetry::init_subscriber(subscriber);
     }
 });
-
-pub struct TestApp {
-    pub address: String,
-    pub db_pool: PgPool,
-}
 
 async fn configure_database(config: &DatabaseSettings) -> PgPool {
     // Connect to postgres
